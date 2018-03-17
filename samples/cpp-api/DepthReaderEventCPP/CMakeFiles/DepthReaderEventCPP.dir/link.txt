@@ -1,0 +1,1 @@
+/usr/bin/c++    -Wall -fPIC -std=c++14   CMakeFiles/DepthReaderEventCPP.dir/main.cpp.o  -o ../../bin/DepthReaderEventCPP -rdynamic /home/jackfan108/AstraSDK/lib/libastra_core.so /home/jackfan108/AstraSDK/lib/libastra_core_api.so /home/jackfan108/AstraSDK/lib/libastra.so -lpthread -Wl,-rpath,"\$ORIGIN/../lib:/home/jackfan108/AstraSDK/lib" 

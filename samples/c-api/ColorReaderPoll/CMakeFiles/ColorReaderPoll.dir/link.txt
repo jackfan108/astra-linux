@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/ColorReaderPoll.dir/main.c.o  -o ../../bin/ColorReaderPoll -rdynamic /home/jackfan108/AstraSDK/lib/libastra_core.so /home/jackfan108/AstraSDK/lib/libastra_core_api.so /home/jackfan108/AstraSDK/lib/libastra.so -lpthread -Wl,-rpath,"\$ORIGIN/../lib:/home/jackfan108/AstraSDK/lib" 
