@@ -246,6 +246,57 @@ public:
         }
     }
 
+    void nextState() {
+        switch( workout_state ) {
+            case WorkoutState::NoOp:
+                switch( workout_mode ) {
+                    case WorkoutMode::BicepCurl:
+                        setWorkoutState(WorkoutState::BicepUp);
+                        cout << "state set to bicep up" << endl;
+                        break;
+                    case WorkoutMode::ShoulderPress:
+                        setWorkoutState(WorkoutState::
+                            ShoulderPressUp);
+                        cout << "state set to shoulder press up" << endl;
+                        break;
+                    case WorkoutMode::Squat:
+                        setWorkoutState(WorkoutState::SquatDown);
+                        cout << "state set to squat down" << endl;
+                        break;
+                }
+                break;
+            case WorkoutState::BicepUp:
+                setWorkoutState(WorkoutState::BicepDown);
+                cout << "state set to bicep down" << endl;
+                break;
+            case WorkoutState::BicepDown:
+                setWorkoutState(WorkoutState::NoOp);
+                cout << "state set to no-op" << endl;
+                break;
+            case WorkoutState::ShoulderPressUp:
+                setWorkoutState(WorkoutState::ShoulderPressDown);
+                cout << "state set to shoulder press down" << endl;
+                break;
+            case WorkoutState::ShoulderPressDown:
+                setWorkoutState(WorkoutState::NoOp);
+                cout << "state set to no-op" << endl;
+                break;
+            case WorkoutState::SquatDown:
+                setWorkoutState(WorkoutState::SquatUp);
+                cout << "state set to squat up" << endl;
+                break;
+            case WorkoutState::SquatUp:
+                setWorkoutState(WorkoutState::NoOp);
+                cout << "state set to no-op" << endl;
+                break;
+        }
+
+    }
+
+    void setWorkoutState(WorkoutState ws) {
+        workout_state = ws;
+    }
+
     void processBodies(astra::Frame& frame)
     {
         const float jointScale = depthWidth_ / 120.f;
@@ -716,6 +767,10 @@ int main(int argc, char** argv)
                 case sf::Keyboard::Num3:
                     // switch to recording squat
                     listener.setWorkoutMode(BodyVisualizer::WorkoutMode::Squat);
+                    break;
+                case sf::Keyboard::Return:
+                    // switch to the next state of current workout
+                    listener.nextState();
                     break;
                 default:
                     break;
