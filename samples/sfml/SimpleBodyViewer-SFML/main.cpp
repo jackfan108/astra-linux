@@ -18,6 +18,8 @@
 #include <astra/astra.hpp>
 #include <iostream>
 #include <cstring>
+#include <fstream>
+using namespace std;
 
 #include <cstdlib>
 #include <curlpp/cURLpp.hpp>
@@ -33,7 +35,7 @@ public:
         : color_(color)
     {
         const sf::Vector2f direction = point2 - point1;
-        const sf::Vector2f unitDirection = direction / std::sqrt(direction.x*direction.x + direction.y*direction.y);
+        const sf::Vector2f unitDirection = direction / sqrt(direction.x*direction.x + direction.y*direction.y);
         const sf::Vector2f normal(-unitDirection.y, unitDirection.x);
 
         const sf::Vector2f offset = (thickness / 2.f) * normal;
@@ -60,7 +62,7 @@ private:
 class BodyVisualizer : public astra::FrameListener
 {
 public:
-    static sf::Color get_body_color(std::uint8_t bodyId)
+    static sf::Color get_body_color(uint8_t bodyId)
     {
         if (bodyId == 0)
         {
@@ -135,7 +137,7 @@ public:
             int byteLength = depthWidth_ * depthHeight_ * 4;
 
             displayBuffer_ = BufferPtr(new uint8_t[byteLength]);
-            std::memset(displayBuffer_.get(), 0, byteLength);
+            memset(displayBuffer_.get(), 0, byteLength);
 
             texture_.create(depthWidth_, depthHeight_);
             sprite_.setTexture(texture_, true);
@@ -152,7 +154,7 @@ public:
             int byteLength = overlayWidth_ * overlayHeight_ * 4;
 
             overlayBuffer_ = BufferPtr(new uint8_t[byteLength]);
-            std::fill(&overlayBuffer_[0], &overlayBuffer_[0] + byteLength, 0);
+            fill(&overlayBuffer_[0], &overlayBuffer_[0] + byteLength, 0);
 
             overlayTexture_.create(overlayWidth_, overlayHeight_);
             overlaySprite_.setTexture(overlayTexture_, true);
@@ -164,7 +166,7 @@ public:
     {
         double fpsFactor = 0.02;
 
-        std::clock_t newTimepoint= std::clock();
+        clock_t newTimepoint= clock();
         long double frameDuration = (newTimepoint - lastTimepoint_) / static_cast<long double>(CLOCKS_PER_SEC);
 
         frameDuration_ = frameDuration * fpsFactor + frameDuration_ * (1 - fpsFactor);
@@ -204,10 +206,22 @@ public:
         texture_.update(displayBuffer_.get());
     }
 
+    void toggleDataCollection() {
+        if (collecting) {
+            cout << "data collection stopped" << endl;
+            data_count++;
+        } else {
+            cout << "data collection started :D" << endl;
+        }
+        collecting = !collecting;
+    }
+
     void processBodies(astra::Frame& frame)
     {
         const float jointScale = depthWidth_ / 120.f;
         astra::BodyFrame bodyFrame = frame.get<astra::BodyFrame>();
+
+        ofstream file; // open this file per frame to write data
 
         jointPositions_.clear();
         circles_.clear();
@@ -223,27 +237,57 @@ public:
 
         const auto& bodies = bodyFrame.bodies();
 
+        string file_name = "bicep_curl";
+        file_name.append(to_string(data_count));
+        file_name.append(".csv");
+        file.open(file_name, ios_base::app);
+        string data = "";
+
         for (auto& body : bodies)
         {
-            printf("Processing frame #%d body %d left hand: %u\n",
-                bodyFrame.frame_index(), body.id(), unsigned(body.hand_poses().left_hand()));
+            // printf("Processing frame #%d body %d left hand: %u\n",
+            //     bodyFrame.frame_index(), body.id(), unsigned(body.hand_poses().left_hand()));
             for(auto& joint : body.joints())
             {
+                if (collecting) {
+                    // char* joint_data[1000] = {};
+                    string x = to_string(joint.world_position().x);
+                    string y = to_string(joint.world_position().y);
+                    string z = to_string(joint.world_position().z);
+                    data.append(x + ", " + y + ", " + z + ", ");
+                    // joint_dat =
+                    // cout << "this is good\n" << endl;
+                    // fflush(stdout);
+                    // printf("%f, %f, %f, \n", joint.world_position().x, joint.world_position().y, joint.world_position().z);
+                    // sprintf(joint_data, "%f, %f, %f, ", joint.world_position().x, joint.world_position().y, joint.world_position().z);
+                    // fflush(stdout);
+                    // cout << "okay wrote data..." << endl;
+                    // data.append(joint_data);
+                    // cout << "okay appended data" << endl;
+                    // cout << "done collecting" << endl;
+                }
+
+
                 jointPositions_.push_back(joint.depth_position());
             }
+
+            if (data != "") {
+                file << data.substr(0, data.size() - 2) << endl;
+            }
+            file.close();
 
             update_body(body, jointScale);
         }
 
         const auto& floor = bodyFrame.floor_info(); //floor
-        if (floor.floor_detected())
-        {
-            const auto& p = floor.floor_plane();
-            std::cout << "Floor plane: ["
-                << p.a() << ", " << p.b() << ", " << p.c() << ", " << p.d()
-                << "]" << std::endl;
+        // if (floor.floor_detected())
+        // {
+        //     const auto& p = floor.floor_plane();
+        //     cout << "Floor plane: ["
+        //         << p.a() << ", " << p.b() << ", " << p.c() << ", " << p.d()
+        //         << "]" << endl;
 
-        }
+        // }
 
         const auto& bodyMask = bodyFrame.body_mask();
         const auto& floorMask = floor.floor_mask();
@@ -261,11 +305,12 @@ public:
             return;
         }
 
-        std::vector<float> joint_cords;
+        vector<float> joint_cords;
 
         for (const auto& joint : joints)
         {
             // push joint xyz into joint_cords
+            // this is for sending frame data to the python server
             joint_cords.push_back(joint.world_position().x);
             joint_cords.push_back(joint.world_position().y);
             joint_cords.push_back(joint.world_position().z);
@@ -306,8 +351,8 @@ public:
             circleShadows_.push_back(shadow);
         }
 
-        std::cout << "okay test connection with real body data :D" << std::endl;
-        test_connection(joint_cords);
+        // cout << "okay test connection with real body data :D" << endl;
+        // test_connection(joint_cords);
 
         update_bone(joints, jointScale, astra::JointType::Head, astra::JointType::ShoulderSpine);
 
@@ -413,20 +458,20 @@ public:
     void clear_overlay()
     {
         int byteLength = overlayWidth_ * overlayHeight_ * 4;
-        std::fill(&overlayBuffer_[0], &overlayBuffer_[0] + byteLength, 0);
+        fill(&overlayBuffer_[0], &overlayBuffer_[0] + byteLength, 0);
 
         overlayTexture_.update(overlayBuffer_.get());
     }
 
-    void test_connection(std::vector<float> arr)
+    void test_connection(vector<float> arr)
     {
-        std::string url = "localhost:5000/?";
+        string url = "localhost:5000/?";
         // float float_arr[60] = { 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0,  };
         for (int i = 0; i < 57; i++)
         {
-            url += std::to_string(i);
+            url += to_string(i);
             url += "=";
-            url += std::to_string(arr[i]);
+            url += to_string(arr[i]);
             url += "&";
         }
         // char *url = "localhost:5000/?w=x&y=z";
@@ -452,7 +497,7 @@ public:
         processDepth(frame);
         processBodies(frame);
         // check_fps();
-        // std::cout << "boooom" << std::endl;
+        // cout << "boooom" << endl;
     }
 
     void draw_bodies(sf::RenderWindow& window)
@@ -503,25 +548,25 @@ public:
 
 private:
     long double frameDuration_{ 0 };
-    std::clock_t lastTimepoint_ { 0 };
+    clock_t lastTimepoint_ { 0 };
     sf::Texture texture_;
     sf::Sprite sprite_;
 
-    using BufferPtr = std::unique_ptr < uint8_t[] >;
+    using BufferPtr = unique_ptr < uint8_t[] >;
     BufferPtr displayBuffer_{ nullptr };
 
-    std::unique_ptr<astra::CoordinateMapper> mapper_;
-    std::vector<astra::Vector2f> jointPositions_;
+    unique_ptr<astra::CoordinateMapper> mapper_;
+    vector<astra::Vector2f> jointPositions_;
 
     int depthWidth_{0};
     int depthHeight_{0};
     int overlayWidth_{0};
     int overlayHeight_{0};
 
-    std::vector<sfLine> boneLines_;
-    std::vector<sfLine> boneShadows_;
-    std::vector<sf::CircleShape> circles_;
-    std::vector<sf::CircleShape> circleShadows_;
+    vector<sfLine> boneLines_;
+    vector<sfLine> boneShadows_;
+    vector<sf::CircleShape> circles_;
+    vector<sf::CircleShape> circleShadows_;
 
     float lineThickness_{ 0.5f }; // pixels
     float jointRadius_{ 1.0f };   // pixels
@@ -531,6 +576,8 @@ private:
     sf::Texture overlayTexture_;
     sf::Sprite overlaySprite_;
 
+    bool collecting = false;
+    int data_count = 0;
 };
 
 astra::DepthStream configure_depth(astra::StreamReader& reader)
@@ -619,6 +666,11 @@ int main(int argc, char** argv)
                     break;
                 case sf::Keyboard::M:
                     depthStream.enable_mirroring(!depthStream.mirroring_enabled());
+                    break;
+                case sf::Keyboard::Space:
+                    // this is used to start/stop data collection
+                    cout <<  "SPACE PRESSED" << endl;
+                    listener.toggleDataCollection();
                     break;
                 default:
                     break;

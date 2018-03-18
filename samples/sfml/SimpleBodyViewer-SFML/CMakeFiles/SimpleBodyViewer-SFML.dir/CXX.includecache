@@ -453,6 +453,8 @@ iostream
 -
 cstring
 -
+fstream
+-
 cstdlib
 -
 curlpp/cURLpp.hpp
