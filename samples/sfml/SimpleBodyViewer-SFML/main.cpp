@@ -62,6 +62,23 @@ private:
 class BodyVisualizer : public astra::FrameListener
 {
 public:
+    enum class WorkoutMode {
+        BicepCurl,
+        ShoulderPress,
+        Squat,
+    };
+
+    enum class WorkoutState {
+        NoOp,
+        BicepUp,
+        BicepDown,
+        ShoulderPressUp,
+        ShoulderPressDown,
+        SquatDown,
+        SquatUp,
+    };
+
+
     static sf::Color get_body_color(uint8_t bodyId)
     {
         if (bodyId == 0)
@@ -214,6 +231,19 @@ public:
             cout << "data collection started :D" << endl;
         }
         collecting = !collecting;
+    }
+
+    void setWorkoutMode(WorkoutMode wm) {
+        workout_mode = wm;
+        if (wm == WorkoutMode::BicepCurl) {
+            cout << "now recording bicep curl" << endl;
+        } else if (wm == WorkoutMode::ShoulderPress) {
+            cout << "now recording shoulder press" << endl;
+        } else if (wm == WorkoutMode::Squat) {
+            cout << "now recording squat" << endl;
+        } else {
+            cout << "ugh oh... idk what's going on" << endl;
+        }
     }
 
     void processBodies(astra::Frame& frame)
@@ -578,6 +608,8 @@ private:
 
     bool collecting = false;
     int data_count = 0;
+    WorkoutState workout_state = WorkoutState::NoOp;
+    WorkoutMode workout_mode;
 };
 
 astra::DepthStream configure_depth(astra::StreamReader& reader)
@@ -671,6 +703,19 @@ int main(int argc, char** argv)
                     // this is used to start/stop data collection
                     cout <<  "SPACE PRESSED" << endl;
                     listener.toggleDataCollection();
+                    break;
+                case sf::Keyboard::Num1:
+                    // switch to recording bicep_curl
+                    listener.setWorkoutMode(BodyVisualizer::WorkoutMode::BicepCurl);
+                    break;
+                case sf::Keyboard::Num2:
+                    // switch to recording shoulder_press
+                    listener.setWorkoutMode(BodyVisualizer::WorkoutMode::ShoulderPress);
+
+                    break;
+                case sf::Keyboard::Num3:
+                    // switch to recording squat
+                    listener.setWorkoutMode(BodyVisualizer::WorkoutMode::Squat);
                     break;
                 default:
                     break;
