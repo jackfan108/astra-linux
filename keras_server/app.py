@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from flask import Flask, render_template, request
+import lstm_test as lt
 import numpy as np
 import tensorflow as tf
 import keras
@@ -51,24 +52,6 @@ def homepage():
     predict(normalize(frames[-80:]))
 
   return render_template('index.html')
-
-
-def normalize(frames):
-  # print("moment of truth please:")
-  # print(frames)
-  for index in range(len(frames)):
-    frame = frames[index]
-    head_c = (frame[0], frame[1], frame[2])
-    transitioned_frame = [x - head_c[i%3] for i, x in enumerate(frame)]
-    # print('check yo')
-    # print(frame[36], frame[45], frame[37], frame[46], frame[38], frame[47])
-    mid_feet_c = ((frame[36] + frame[45])/2, (frame[37] + frame[46])/2, (frame[38] + frame[47])/2)
-    # print("mid_feet_c:", mid_feet_c)
-    body_length = (mid_feet_c[0]**2 + mid_feet_c[1]**2 + mid_feet_c[2]**2)**0.5
-    # print("body_length: ", body_length)
-    scaled_frame = [x/body_length for i, x in enumerate(transitioned_frame)]
-    frames[index] = scaled_frame
-  return frames
 
 
 
