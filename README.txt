@@ -307,3 +307,4 @@ Known Issues
 
 * There are some APIs that are missing: camera hardware configuration (white balance, exposure, etc.),
   controlling the IR projector and Astra Mini IR flood, etc. These are coming soon.
+* ...
