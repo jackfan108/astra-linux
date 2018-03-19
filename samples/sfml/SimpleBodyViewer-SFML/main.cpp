@@ -337,16 +337,6 @@ public:
                     string y = to_string(joint.world_position().y);
                     string z = to_string(joint.world_position().z);
                     data.append(x + ", " + y + ", " + z + ", ");
-                    // joint_dat =
-                    // cout << "this is good\n" << endl;
-                    // fflush(stdout);
-                    // printf("%f, %f, %f, \n", joint.world_position().x, joint.world_position().y, joint.world_position().z);
-                    // sprintf(joint_data, "%f, %f, %f, ", joint.world_position().x, joint.world_position().y, joint.world_position().z);
-                    // fflush(stdout);
-                    // cout << "okay wrote data..." << endl;
-                    // data.append(joint_data);
-                    // cout << "okay appended data" << endl;
-                    // cout << "done collecting" << endl;
                 }
 
 
@@ -559,7 +549,7 @@ public:
     void test_connection(vector<float> arr)
     {
         string url = "localhost:5000/?";
-        // float float_arr[60] = { 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 3.0,  };
+
         for (int i = 0; i < 57; i++)
         {
             url += to_string(i);
@@ -567,7 +557,6 @@ public:
             url += to_string(arr[i]);
             url += "&";
         }
-        // char *url = "localhost:5000/?w=x&y=z";
         curlpp::Cleanup cleaner;
         curlpp::Easy request;
 
@@ -590,7 +579,6 @@ public:
         processDepth(frame);
         processBodies(frame);
         // check_fps();
-        // cout << "boooom" << endl;
     }
 
     void draw_bodies(sf::RenderWindow& window)
