@@ -69,13 +69,13 @@ public:
     };
 
     enum class WorkoutState {
-        NoOp,
-        BicepUp,
-        BicepDown,
-        ShoulderPressUp,
-        ShoulderPressDown,
-        SquatDown,
-        SquatUp,
+        NoOp = 0,
+        BicepUp = 1,
+        BicepDown = 2,
+        ShoulderPressUp = 3,
+        ShoulderPressDown = 4,
+        SquatDown = 5,
+        SquatUp = 6,
     };
 
 
@@ -228,6 +228,7 @@ public:
             cout << "data collection stopped" << endl;
             data_count++;
         } else {
+            data_count++;
             cout << "data collection started :D" << endl;
         }
         collecting = !collecting;
@@ -318,7 +319,7 @@ public:
 
         const auto& bodies = bodyFrame.bodies();
 
-        string file_name = "bicep_curl";
+        string file_name = "mix_data_";
         file_name.append(to_string(data_count));
         file_name.append(".csv");
         file.open(file_name, ios_base::app);
@@ -352,10 +353,21 @@ public:
                 jointPositions_.push_back(joint.depth_position());
             }
 
-            if (data != "") {
+            if (collecting && data != "") {
+                data = to_string(static_cast<int>(workout_state)) + ", " + data;
                 file << data.substr(0, data.size() - 2) << endl;
+                frame_count++;
             }
+
+
             file.close();
+
+            if (collecting && frame_count > 150) {
+                frame_count = 1;
+                collecting = false;
+                setWorkoutState(WorkoutState::NoOp);
+                cout << "- done writing data into current file, please press enter to write in new file -" << endl;
+            }
 
             update_body(body, jointScale);
         }
@@ -658,7 +670,8 @@ private:
     sf::Sprite overlaySprite_;
 
     bool collecting = false;
-    int data_count = 0;
+    int data_count = 1;
+    int frame_count = 1;
     WorkoutState workout_state = WorkoutState::NoOp;
     WorkoutMode workout_mode;
 };
