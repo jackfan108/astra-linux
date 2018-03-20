@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from flask import Flask, render_template, request
-import lstm_test as lt
+from lstm_test import normalize
 import numpy as np
 import tensorflow as tf
 import keras

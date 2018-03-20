@@ -228,7 +228,6 @@ public:
             cout << "data collection stopped" << endl;
             data_count++;
         } else {
-            data_count++;
             cout << "data collection started :D" << endl;
         }
         collecting = !collecting;
@@ -319,7 +318,7 @@ public:
 
         const auto& bodies = bodyFrame.bodies();
 
-        string file_name = "mix_data_";
+        string file_name = "fake_data_";
         file_name.append(to_string(data_count));
         file_name.append(".csv");
         file.open(file_name, ios_base::app);
@@ -352,8 +351,9 @@ public:
 
             file.close();
 
-            if (collecting && frame_count > 150) {
+            if (collecting && frame_count > 300) {
                 frame_count = 1;
+                data_count ++;
                 collecting = false;
                 setWorkoutState(WorkoutState::NoOp);
                 cout << "- done writing data into current file, please press enter to write in new file -" << endl;
