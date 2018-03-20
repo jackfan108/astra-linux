@@ -323,3 +323,4 @@ ASALocalRun/
 *.binlog
 
 *.h5
+*.csv
